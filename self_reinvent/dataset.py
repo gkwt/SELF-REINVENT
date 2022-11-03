@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.nn.function as F
+import torch.nn.functional as F
 
 from torch.utils.data import Dataset
 
@@ -9,7 +9,7 @@ import selfies as sf
 class selfies_dataset(Dataset):
     def __init__(self, sf_list, len_molecule = None):
         self.sf_list = sf_list
-        self.len_molecule = max(sf.len_selfies(s) for s in self.sf_list) if len_molecule is None else len_molecule
+        self.len_molecule = max(sf.len_selfies(s) for s in self.sf_list) + 1 if len_molecule is None else len_molecule
 
         # create the alphabet
         self.alphabet = sf.get_alphabet_from_selfies(sf_list)
@@ -17,11 +17,11 @@ class selfies_dataset(Dataset):
         self.alphabet.insert(0, "[nop]")
 
         # create the conversion vocab
-        self.vocab_stoi = {s, i for i, s in enumerate(self.alphabet)}
-        self.vocab_itos = {i, s for s, i in self.vocab_stoi.items()}
+        self.vocab_stoi = {s: i for i, s in enumerate(self.alphabet)}
+        self.vocab_itos = {i: s for s, i in self.vocab_stoi.items()}
 
     def __len__(self):
-        return len(sf_list)
+        return len(self.sf_list)
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):

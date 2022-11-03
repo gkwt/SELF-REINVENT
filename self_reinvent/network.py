@@ -7,7 +7,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .dataset import selfies_dataset, selfies_logprob_dataset
+import numpy as np
+
+from .dataset import selfies_dataset, rl_dataset
 from .utils import smiles_from_sflabels
 
 from torch.utils.data import DataLoader
@@ -91,7 +93,7 @@ class Prior(pl.LightningModule):
         loss = self.nll(F.log_softmax(y_hat, dim=-1), y)
         return loss
 
-    def configure_optimizer(self):
+    def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=0.02)
 
 
@@ -138,7 +140,7 @@ class Agent(pl.LightningModule):
         loss = torch.pow(aug_likelihood - log_prob, 2)
 
         loss_p = -(1 / log_prob).mean()
-        loss += 5e3 * log_p
+        loss += 5e3 * loss_p
         return loss
 
     # def validation_step(self, batch, batch_idx):
